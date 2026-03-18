@@ -106,7 +106,7 @@ get_compose_opts() {
                 REQUESTED_RO_PORT="$OPTARG"
                 ;;
             s)
-                REQUESTED_HC_SETTINGS="$OPTARG"
+                REQUESTED_HC_EEPROM="$OPTARG"
                 ;;
             t)
                 REQUESTED_TAG="$OPTARG"
@@ -338,9 +338,9 @@ is_hamclock_installed() {
         get_current_ports
         echo "  Hamclock version:      '$CURRENT_TAG'"
         echo "  Docker image:          '$CURRENT_IMAGE_BASE:$CURRENT_TAG'"
-        echo "  API port in use:       '$CURRENT_API_PORT'"
-        echo "  Live port in use:      '$CURRENT_LIVE_PORT'"
-        echo "  R/O port in use:       '$CURRENT_RO_PORT'"
+        [ -n "$CURRENT_API_PORT" ]  && echo "  API port(s) in use:    '$CURRENT_API_PORT'"
+        [ -n "$CURRENT_LIVE_PORT" ] && echo "  Live port(s) in use:   '$CURRENT_LIVE_PORT'"
+        [ -n "$CURRENT_RO_PORT" ]   && echo "  R/O port(s) in use:    '$CURRENT_RO_PORT'"
         echo -n "  Backend host:          "
         if [ "$STICKY_BACKEND_HOST" == '-' ]; then
             echo "Image default"
