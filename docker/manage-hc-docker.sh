@@ -21,6 +21,7 @@ DEFAULT_API_PORT=:8080
 DEFAULT_LIVE_PORT=:8081
 DEFAULT_RO_PORT=:8082
 DEFAULT_BACKEND_HOST=-
+DEFAULT_HC_SIZE=-
 # the following env is the lighttpd env file
 DEFAULT_HC_EEPROM=hc.settings
 
@@ -94,7 +95,7 @@ main() {
 }
 
 get_compose_opts() {
-    while getopts ":a:b:r:s:t:w:" opt; do
+    while getopts ":a:b:e:r:s:t:w:" opt; do
         case $opt in
             a)
                 REQUESTED_API_PORT="$OPTARG"
@@ -102,11 +103,14 @@ get_compose_opts() {
             b)
                 REQUESTED_BACKEND_HOST="$OPTARG"
                 ;;
+            e)
+                REQUESTED_HC_EEPROM="$OPTARG"
+                ;;
             r)
                 REQUESTED_RO_PORT="$OPTARG"
                 ;;
             s)
-                REQUESTED_HC_EEPROM="$OPTARG"
+                REQUESTED_HC_SIZE="$OPTARG"
                 ;;
             t)
                 REQUESTED_TAG="$OPTARG"
@@ -216,6 +220,7 @@ STICKY_LIVE_PORT="$LIVE_PORT"
 STICKY_RO_PORT="$RO_PORT"
 STICKY_HC_EEPROM="$HC_EEPROM"
 STICKY_BACKEND_HOST=$BACKEND_HOST
+STICKY_HC_SIZE=$HC_SIZE
 EOF
 }
 
@@ -713,6 +718,29 @@ determine_backend_host() {
     fi
 }
 
+determine_hc_size() {
+
+    # first precedence
+    if [ -n "$REQUESTED_HC_SIZE" ]; then
+        HC_SIZE=$REQUESTED_HC_SIZE
+
+    # second precedence
+    elif [ -n "$STICKY_HC_SIZE" ]; then
+        HC_SIZE=$STICKY_HC_SIZE
+
+    # third precedence
+    else
+        HC_SIZE=$DEFAULT_HC_SIZE
+
+    fi
+
+    if [ "$HC_SIZE" == "-" ]; then
+        DC_HC_SIZE=""
+    else
+        DC_HC_SIZE="- HC_SIZE=$HC_SIZE"
+    fi
+}
+
 determine_tag() {
     get_current_image_tag
 
@@ -754,6 +782,7 @@ determine_tag() {
 docker_compose_yml() {
     determine_ports
     determine_backend_host
+    determine_hc_size
     determine_eeprom_file
 
     determine_tag || return $?
@@ -778,6 +807,7 @@ services:
     environment:
       - UTC_OFFSET=0
       $DC_BACKEND_HOST
+      $DC_HC_SIZE
     container_name: $CONTAINER
     image: $IMAGE
     restart: unless-stopped

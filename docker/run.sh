@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# default size which only applies if all sizes are built
+if [ -z "$HC_SIZE" ]; then
+    HC_SIZE=2400x1440
+fi
+
 if [ -z "$BACKEND_HOST" -a -e /root/hamclock/backend_host ]; then
     BACKEND_HOST="$(grep -v '^#' /root/hamclock/backend_host)"
 fi
@@ -35,5 +40,14 @@ cleanup() {
 # Trap the TERM signal
 trap cleanup SIGTERM
 
-/usr/local/bin/hamclock -t 10 $BACKEND_ARG &
+if [ -x /usr/local/bin/hamclock-web-$HC_SIZE ]; then
+    HC_EXEC="/usr/local/bin/hamclock-web-$HC_SIZE"
+elif [ -x /usr/local/bin/hamclock ]; then
+    HC_EXEC="/usr/local/bin/hamclock"
+else
+    echo "ERROR: no hamclock executable for size '$HC_SIZE'"
+    exit 1
+fi
+
+$HC_EXEC -t 10 $BACKEND_ARG &
 wait $!
