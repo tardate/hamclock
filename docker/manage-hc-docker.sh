@@ -8,6 +8,7 @@ IMAGE_BASE=komacke/hamclock
 # Get our directory locations in order
 HERE="$(realpath -s "$(dirname "$0")" 2>/dev/null)"
 [ -z "$HERE" ] && HERE="$(realpath "$(dirname "$0")")"
+REL_HERE="$(dirname "$0")"
 THIS="$(basename "$0")"
 STARTED_FROM="$PWD"
 cd $HERE
@@ -24,7 +25,8 @@ DEFAULT_BACKEND_HOST=-
 DEFAULT_HC_SIZE=-
 # the following env is the lighttpd env file
 DEFAULT_HC_EEPROM=hc.settings
-HC_USER=1199
+HC_UID=1199
+HC_GID=1199
 
 # the following env is for sticky settings
 STICKY_ENV_FILE=$DOCKER_PROJECT.env
@@ -705,11 +707,11 @@ hc_settings_perms() {
 
     CAN_ACCESS=false
     # test for u+rw
-    if [[ "$HC_OWN" == "$HC_USER" && "$HC_PERMS" == [67]?? ]]; then
+    if [[ "$HC_OWN" == "$HC_UID" && "$HC_PERMS" == [67]?? ]]; then
         CAN_ACCESS=true
 
     # test for g+rw
-    elif [[ "$HC_GRP" == "$HC_USER" && "$HC_PERMS" == ?[67]? ]]; then
+    elif [[ "$HC_GRP" == "$HC_GID" && "$HC_PERMS" == ?[67]? ]]; then
         CAN_ACCESS=true
     elif [[ "$HC_PERMS" == ??[67] ]]; then
         CAN_ACCESS=true
@@ -717,13 +719,13 @@ hc_settings_perms() {
         chmod o+rw $HC_EEPROM >/dev/null 2>&1
         PERM_RETVAL=$?
         if [ $PERM_RETVAL -ne 0 ]; then
+            echo "ERROR:"
+            echo "    '$REL_HERE/$(basename "$HC_EEPROM")' needs to be read/write by user $HC_UID:$HC_GID"
             echo
-            echo "ERROR: $HC_EEPROM needs to be read/write by user $HC_USER:$HC_USER"
-            echo
-            echo "Try something like this:"
-            echo "    sudo chown $HC_USER:$HC_USER $HC_EEPROM"
-            echo "or"
-            echo "    sudo chmod o+rw $HC_EEPROM"
+            echo "    Try something like this:"
+            echo "        sudo chown $HC_UID:$HC_GID $REL_HERE/$(basename "$HC_EEPROM")"
+            echo "    or"
+            echo "        sudo chmod o+rw $REL_HERE/$(basename "$HC_EEPROM")"
             echo
             exit 1
         fi
