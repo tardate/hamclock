@@ -26,6 +26,7 @@ RUN addgroup -g $HC_GID hamclock && \
     \
     mkdir /opt/hamclock/.hamclock && \
     chown -R hamclock:hamclock /opt/hamclock && \
+    chmod 700 /opt/hamclock && \
     cd ESPHamClock && \
     \
     if [ -n "$HC_SIZE" ]; then \
