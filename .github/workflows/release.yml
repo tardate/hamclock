@@ -29,11 +29,6 @@ jobs:
           sed "s/^\(HC_MANAGER_VERSION=\).*$/\1$TAG/" ./docker/manage-hc-docker.sh \
           > "./docker/$MGR_NAME"
 
-          # zip file for HamClock upgrades
-          zip -r "dist/ESPHamClock-$TAG.zip" ESPHamClock -x "dist/*"
-          cp "dist/ESPHamClock-$TAG.zip" "dist/ESPHamClock.zip" 
-          zip -r "dist/hamclock-contrib.zip" hamclock-contrib -x "dist/*"
-
           # add version artifact
           echo "TAG=$TAG" > VERSION.txt
 
@@ -41,6 +36,11 @@ jobs:
           mkdir dist
           tar -czf "dist/HC-$TAG.tar.gz" --exclude=dist .
           zip -r "dist/HC-$TAG.zip" . -x "dist/*"
+
+          # zip file for HamClock upgrades
+          zip -r "dist/ESPHamClock-$TAG.zip" ESPHamClock -x "dist/*"
+          cp "dist/ESPHamClock-$TAG.zip" "dist/ESPHamClock.zip" 
+          zip -r "dist/hamclock-contrib.zip" hamclock-contrib -x "dist/*"
 
       - name: Create Release and Upload Asset
         env:
