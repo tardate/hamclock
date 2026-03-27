@@ -22,16 +22,23 @@ jobs:
         run: |
           # Define asset names with the tag
           TAG="${{ github.event.inputs.tag_name }}"
-          HC_TAG=V${TAG%.*}
+
+          HC_TAG=${TAG%.*}
+          HC_TAG=${HC_TAG#v}
+          HC_TAG=${HC_TAG#V}
+
           REF="${{ github.ref_name }}"
           MGR_NAME="manage-hc-docker-$TAG.sh"
 
           # create a manager with version in the name and file
           sed "s/^\(HC_MANAGER_VERSION=\).*$/\1$TAG/" ./docker/manage-hc-docker.sh \
-          > "./docker/$MGR_NAME"
+            > "./docker/$MGR_NAME"
 
           # add version artifact
           echo "TAG=$TAG" > VERSION.txt
+
+          # update version in HC source
+          sed -i 's/\(hc_version = "\)[0-9.]\+/\1'$HC_TAG'/' version.cpp
 
           # create the tars and zips
           mkdir dist
@@ -39,8 +46,8 @@ jobs:
           zip -r "dist/HC-$TAG.zip" . -x "dist/*"
 
           # zip file for HamClock upgrades
-          zip -r "dist/ESPHamClock-$HC_TAG.zip" ESPHamClock -x "dist/*"
-          cp "dist/ESPHamClock-$HC_TAG.zip" "dist/ESPHamClock.zip" 
+          zip -r "dist/ESPHamClock-V$HC_TAG.zip" ESPHamClock -x "dist/*"
+          cp "dist/ESPHamClock-V$HC_TAG.zip" "dist/ESPHamClock.zip" 
           zip -r "dist/hamclock-contrib.zip" hamclock-contrib -x "dist/*"
 
       - name: Create Release and Upload Asset
@@ -48,12 +55,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ github.event.inputs.tag_name }}"
-          HC_TAG=V${TAG%.*}
+          HC_TAG=${TAG%.*}
+          HC_TAG=${HC_TAG#v}
+          HC_TAG=${HC_TAG#V}
+
           # Grabs file from repo tree and uploads with a label
           gh release create $TAG \
             "./docker/manage-hc-docker-$TAG.sh#Manage HamClock Docker Installs" \
             "dist/ESPHamClock.zip#HamClock Source Zip" \
-            "dist/ESPHamClock-$HC_TAG.zip#HamClock Source Zip with version" \
+            "dist/ESPHamClock-V$HC_TAG.zip#HamClock Source Zip with version" \
             "dist/hamclock-contrib.zip#HamClock 3rd party contributions" \
             --title "HamClock Release: $TAG" \
             --generate-notes
