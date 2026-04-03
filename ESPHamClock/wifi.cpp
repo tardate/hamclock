@@ -397,6 +397,7 @@ static void initWiFi (bool verbose)
         tftMsg (verbose, 0, "GW: %d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
         ip = WiFi.dnsIP();
         tftMsg (verbose, 0, "DNS: %d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+        tftMsg (verbose, 0, "BE: %s:%d", backend_host, backend_port);
 
         int rssi;
         bool is_dbm;
