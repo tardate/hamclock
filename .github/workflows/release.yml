@@ -22,10 +22,13 @@ jobs:
         run: |
           # Define asset names with the tag
           TAG="${{ github.event.inputs.tag_name }}"
+          HC_VER_PATTERN='^[0-9]+\.[0-9]+(b[0-9][0-9])?$'
 
           HC_TAG=${TAG%.*}
           HC_TAG=${HC_TAG#v}
           HC_TAG=${HC_TAG#V}
+          # test if HC_TAG is the right format
+          [[ $HC_TAG =~ $HC_VER_PATTERN ]] || exit 1
 
           REF="${{ github.ref_name }}"
           MGR_NAME="manage-hc-docker-$TAG.sh"
