@@ -72,4 +72,5 @@ jobs:
             "old-versions/ESPHamClock-V3.10.zip#HamClock Source Zip for ESP devices" \
             "dist/hamclock-contrib-V$HC_TAG.zip#HamClock 3rd party contributions" \
             --title "HamClock Release: $TAG" \
+            --target ${{ github.ref_name }} \
             --generate-notes
