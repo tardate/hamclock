@@ -19,6 +19,7 @@ jobs:
         uses: actions/checkout@v5
         with:
             ref: ${{ github.ref_name }}
+            fetch-depth: 0
 
       - name: Prepare assets
         run: |
@@ -66,8 +67,8 @@ jobs:
 
           # Grabs file from repo tree and uploads with a label
           gh release create $TAG \
-            "./docker/manage-hc-docker-$TAG.sh#Manage HamClock Docker Installs" \
-            "./debian/install-hc-rpi#Installer for RPi and other Debian distros" \
+            "docker/manage-hc-docker-$TAG.sh#Manage HamClock Docker Installs" \
+            "debian/install-hc-rpi#Installer for RPi and other Debian distros" \
             "dist/ESPHamClock-V$HC_TAG.zip#HamClock Source Zip with version" \
             "old-versions/ESPHamClock-V3.10.zip#HamClock Source Zip for ESP devices" \
             "dist/hamclock-contrib-V$HC_TAG.zip#HamClock 3rd party contributions" \
