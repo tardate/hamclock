@@ -29,6 +29,7 @@
 
 #include "Arduino.h"
 #include "IPAddress.h"
+#include "timeout.h"
 
 class WiFiClient {
 
@@ -63,7 +64,7 @@ class WiFiClient {
 
     private:
 
-        const int READ_PENDING_MS = 10000;      // max read wait time, ms
+    uint16_t read_pending_ms;               // max read wait time, ms
 	int socket;                             // open if >= 0
   	uint8_t peek[4096*10];                  // read-ahead buffer
   	int n_peek;                             // n useful values in peek[]

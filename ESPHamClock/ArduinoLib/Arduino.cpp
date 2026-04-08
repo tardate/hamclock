@@ -13,7 +13,7 @@
 #include <sys/resource.h>
 
 #include "Arduino.h"
-
+#include "timeout.h"
 // max cpu usage, throttle with -t
 #define DEF_CPU_USAGE 0.8F
 static float max_cpu_usage = DEF_CPU_USAGE;
@@ -30,10 +30,12 @@ const char *diag_files[N_DIAG_FILES] = {
     "diagnostic-log-1.txt",
     "diagnostic-log-2.txt"
 };
-
-
+// helper macro to get value of macro without quotes
+#define STRINGIFY(x) #x
+#define TOSTRING(x)  STRINGIFY(x)
 // how we were made
 char build_variables[64];
+char build_B[128];				  
 
 #if defined(_USE_FB0)
   #if defined(_CLOCK_1600x960)
@@ -80,6 +82,9 @@ static void initBuildVariables(void)
     #if defined(_FB_DEPTH)
         snprintf (build_variables, sizeof(build_variables), "FB_DEPTH=%d ", _FB_DEPTH);
     #endif
+    #if defined(_T)
+        snprintf (build_variables+strlen(build_variables), sizeof(build_variables)-strlen(build_variables), "T=%d ", _T);
+    #endif				   
     #if defined(_WIFI_NEVER)
         strcat(build_variables, "WIFI_NEVER=1 ");
     #endif
@@ -393,6 +398,7 @@ static void usage (const char *errfmt, ...)
                                     LIVEWEB_RO_PORT);
             fprintf (stderr, " -s d : start time as if UTC now is d formatted as YYYY-MM-DDTHH:MM:SS\n");
             fprintf (stderr, " -t p : throttle max cpu to p percent; default is %.0f\n", DEF_CPU_USAGE*100);
+            fprintf (stderr, " -T t : set max timeout for responses from backend\n");			
             fprintf (stderr, " -v   : show version info then exit\n");
             fprintf (stderr, " -w p : set read-write live web server port to p or -1 to disable; default %d\n",
                                     LIVEWEB_RW_PORT);
@@ -427,7 +433,16 @@ static void crackArgs (int ac, char *av[])
         const char *new_appdir = NULL;
         bool cl_set = false;
         int max_lw = 0;
-
+// process build variables before processing command options that override them
+    #if defined(_T)
+		{
+			char *myt = strdup(TOSTRING(_T));
+			uint8_t to = atoi(myt);
+			if (to < 1  || to > 65)	
+				usage ("build error, T=timout, timeout must be [1,65] seconds");
+			set_timeout_s(to);
+		}
+    #endif
         while (--ac && **++av == '-') {
             char *s = *av;
             while (*++s) {
@@ -562,6 +577,14 @@ static void crackArgs (int ac, char *av[])
                         usage ("-t percentage must be [10,100]");
                     ac--;
                     break;
+				case 'T': {
+						if (ac < 2)
+							usage ("Missing timeout for -T");
+						uint8_t to = atoi(*++av);
+						ac--;
+						set_timeout_s(to);
+					}
+					break;
                 case 'v':
                     showVersion();
                     exit(0);

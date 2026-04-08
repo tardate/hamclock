@@ -13,6 +13,7 @@ WiFiClient::WiFiClient()
 	socket = -1;
 	n_peek = 0;
         next_peek = 0;
+		read_pending_ms = get_timeout_ms();
 }
 
 // constructor handed an open socket to use
@@ -254,7 +255,7 @@ int WiFiClient::available (int pending_ms)
  */
 int WiFiClient::read()
 {
-        if (available (READ_PENDING_MS)) {
+        if (available (read_pending_ms)) {
             uint8_t p = peek[next_peek++];
             if (debugLevel (DEBUG_NET, 3)) {
                 int n_more = n_peek - next_peek;
@@ -268,14 +269,14 @@ int WiFiClient::read()
 	return (-1);
 }
 
-/* wait as long as READ_PENDING_MS to read up to count more bytes into array.
+/* wait as long as read_pending_ms to read up to count more bytes into array.
  * return actual count or 0 when no more.
  */
 int WiFiClient::readArray (uint8_t *array, long count)
 {
         int n_return = 0;
 
-        if (available (READ_PENDING_MS)) {
+        if (available (read_pending_ms)) {
             int n_available = n_peek - next_peek;
             n_return = count > n_available ? n_available : count;
             memcpy (array, &peek[next_peek], n_return);
