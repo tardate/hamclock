@@ -21,6 +21,10 @@ ifdef FB_DEPTH
     CXXFLAGS += -D_FB_DEPTH=$(FB_DEPTH)
 endif
 
+# add server alias as _T if defined
+ifdef T
+    CXXFLAGS += -D_T=$(T)
+endif
 # handle WiFi configuration
 ifeq ($(WIFI_NEVER),1)
     CXXFLAGS += -D_WIFI_NEVER
@@ -172,7 +176,8 @@ help:
 	@printf "Optional command line variables which may be set before the desired target:\n"
 	@printf "    FB_DEPTH=16 or 32         - Specify a given frame buffer pixel size (default is 32 on all but fb0)\n"
 	@printf "    WIFI_NEVER=1              - Disable WiFi fields in setup (already the default on all but fb0)\n"
-
+	@printf "    T=time                    - Set timout default (seconds) so -b is not required if timout to backend need to be increased\n"
+ 
 
 # supporting libs
 hclibs:
