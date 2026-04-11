@@ -1,5 +1,7 @@
 # HamClock Client Documentation
 
+* [Docker Client Instructions](../docker/)
+* [Raspberry Pi/Debian Client Instructions](../debian/)
 * [Client RESTful API](./api.md)
 * [User Contrib](../hamclock-contrib/README.md)
 * [HamClock User Manual (PDF)](./HamClockKey.pdf)
