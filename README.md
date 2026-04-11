@@ -7,6 +7,8 @@ but can be used with any compatible backend server.
 The HamClock client was originally created by Clear Sky Institute, and made available under an [MIT License](./LICENSE).
 This repository was started  with the source code for Clear Sky Institute's HamClock v4.22, the final version they created.
 
+An archive of historical HamClock client releases up to 4.22 is available at <https://github.com/tardate/hamclock-client-archive>.
+
 ## Documentation
 
 See the [Open Hamclock Backend](https://ohb.works/) site for a general starting point.
