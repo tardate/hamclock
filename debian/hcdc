@@ -17,7 +17,7 @@ DOMAIN="clearskyinstitute.com"
 HOSTS_IP="3.128.20.228"
 BACKEND_HOST="hamclock.com"
 BACKEND_PORT="80"
-IP_NAME="hamclock.com backend"
+IP_NAME="Hamclock.com backend"
 
 if [ -n "$BACKEND_PORT" ]; then
     BACKEND_TARGET="${BACKEND_HOST}:${BACKEND_PORT}"
@@ -27,6 +27,7 @@ fi
 
 BACKEND_PATTERN="[^[:space:]'\";)]+" 
 ENTRY="$HOSTS_IP $DOMAIN"
+DESKTOP_EXEC_LINE="Exec=/bin/sh -c 'while [ ! -S /tmp/.X11-unix/X0 ]; do sleep 1; done; sleep 5; exec /usr/local/bin/hamclock -b $BACKEND_TARGET'"
 
 # Work out which user's home to use when run via sudo
 if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
@@ -60,14 +61,12 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 self_update() {
-    local script_path remote_tmp script_dir script_name
+    local script_path remote_tmp script_name
 
-    # Only attempt this once per invocation chain
     if [ -n "$OHB_SELF_UPDATED" ]; then
         return 0
     fi
 
-    # Must be running from a normal file
     script_path=$(readlink -f "$0" 2>/dev/null)
     if [ -z "$script_path" ] || [ ! -f "$script_path" ] || [ ! -w "$script_path" ]; then
         return 0
@@ -96,15 +95,11 @@ self_update() {
         return 0
     fi
 
-    # Basic sanity check so we don't overwrite ourselves with nonsense
     if ! head -n 1 "$remote_tmp" | grep -q '^#!/bin/bash'; then
         rm -f "$remote_tmp"
         echo "Warning: downloaded update does not look valid. Continuing with installed version."
         return 0
     fi
-
-    script_dir=$(dirname "$script_path")
-    script_name=$(basename "$script_path")
 
     if cmp -s "$script_path" "$remote_tmp"; then
         rm -f "$remote_tmp"
@@ -119,6 +114,7 @@ self_update() {
         return 0
     fi
 
+    script_name=$(basename "$script_path")
     echo "A newer version of $script_name was found and installed."
     echo "Restarting with the updated version..."
 
@@ -163,8 +159,8 @@ patch_file() {
     case "$mode" in
         desktop)
             sed -E "/^[[:space:]]*Exec=/ {
-                s/[[:space:]]+-b[[:space:]]+$BACKEND_PATTERN//g
-                s#(^|[^[:alnum:]_/-])(/usr/local/bin/)?(hamclock|hamclock-4k)([[:space:]'\";)]|$)#\1\2\3 -b $BACKEND_TARGET\4#
+                c\\
+$DESKTOP_EXEC_LINE
             }" "$file" > "$tmpfile"
             ;;
         runner)
