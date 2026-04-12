@@ -305,9 +305,7 @@ install_hamclock() {
 
     determine_backend_host
     if is_backend_image_default; then
-        echo
-        echo "WARNING: backend host not set. Using image default. Consider the '-b' option."
-        echo
+        prompt_for_backend_host
     fi
 
     echo "Installing Hamclock ..."
@@ -320,6 +318,44 @@ install_hamclock() {
         return $RETVAL
     fi
     return $RETVAL
+}
+
+prompt_for_backend_host() {
+
+    local valid_choice=false
+
+    echo
+    echo "A backend value needs to be set."
+	echo
+
+    while [ "$valid_choice" = false ]; do
+        echo "Please choose an option:"
+        echo "  1) hamclock.com"
+        echo "  2) ohb.hamclock.app"
+        echo "  3) Type in your choice ..."
+        read -p "Selection [1-3]: " choice
+
+        case $choice in
+            1)
+                BACKEND_HOST="hamclock.com"
+                valid_choice=true
+                ;;
+            2)
+                BACKEND_HOST="ohb.hamclock.app"
+                valid_choice=true
+                ;;
+            3)
+                read -p "Enter your custom backend host: " BACKEND_HOST
+                valid_choice=true
+                ;;
+            *)
+                echo -e "\nERROR: '$choice' is not a valid option. Please try again.\n"
+                ;;
+        esac
+    done
+
+    echo "Backend host set to: $BACKEND_HOST"
+    echo
 }
 
 is_backend_image_default() {
